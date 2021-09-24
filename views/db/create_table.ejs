@@ -1,0 +1,58 @@
+<%-include('../confing/header')%>
+
+    <p><%= data[2].name %></p>
+    
+    <form action="/create_table" method="POST">
+    <div class="form-group">
+      <label for="datahere">NDJSON形式</label><br>
+      <input type="file" id="datahere" name="datahere" >
+    </div>
+    <div class="form-group">
+      <label for="keynames">keynames</label>
+      <input type="text" id="keynames" name="keynames">
+    </div>
+    <div class="form-group">
+      <label for="keytypes">keytypes</label>
+      <input type="text" id="keytypes" name="keytypes">
+    </div>
+    
+    <div>
+      <input type="submit" class="btn btn-primary">
+    </div>
+    </form>
+    <br><br>
+    <p>data preview</p>
+    <div id="dataprev"></div>
+  
+
+
+
+
+  <script>
+  ndjson_to_data('#datahere',function(data){
+    $('#dataprev').empty();
+    let index = [0,1,data.length-2,data.length-1]
+    for (let i=0; i<index.length; i++){
+      var value = $("<ul>").text(index[i] + ' : '+ JSON.stringify(data[index[i]]));
+        $("#dataprev").append(value);
+      }
+    let keynames_value = '';
+    let keytypes_value = '';
+    for (key in data[0]){
+      keynames_value += key + ',';
+      dty = prompt(key + 'のデータタイプは？　[integer or text]','integer');
+      if(dty=='integer'||dty=='text'){
+        keytypes_value += dty + ','
+        console.log(key + ':' + keytypes_value); 
+      }else{
+        keytypes_value = false; keynames_value = false;
+      }
+    }
+    keynames_value = keynames_value.slice(0,-1); 
+    keytypes_value = keytypes_value.slice(0,-1);
+    $("#keynames").attr("value",keynames_value);
+    $("#keytypes").attr("value",keytypes_value);
+  });
+    </script>
+
+<%-include('../confing/footer')%>

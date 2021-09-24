@@ -1,0 +1,212 @@
+<%-include('../confing/header')%>
+
+
+
+<div class="form-group">
+    <label for="x_select">x軸を選択:</label>
+    <select name="x_select" id="x_select">
+        <option value="p,sum,全人口">全人口</option>
+        <option value="p,-14,14才以下人口">14才以下人口</option>
+        <option value="p,15-64,15-64歳人口">15-64歳人口</option>
+        <option value="p,65-,65歳以上人口">65歳以上人口</option>
+        <option value="v,vac1,ワクチン１回接種人口">ワクチン１回接種人口</option>
+        <option value="v,vac2,ワクチン２回接種人口">ワクチン２回接種人口</option>
+        <option value="v,vac1_65,１回接種／65歳以上">１回接種／65歳以上</option>
+        <option value="v,vac2_65,２回接種／65歳以上">２回接種／65歳以上</option>
+        <option value="v,vac1_64,１回接種／65歳未満">１回接種／65歳未満</option>
+        <option value="v,vac2_64,２回接種／65歳未満">２回接種／65歳未満</option>
+        <option value="b,patient,療養者数">療養者数</option>
+        <option value="b,inpatient,入院者数">入院者数</option>
+        <option value="b,inroom,宿泊施設療養者数">宿泊施設療養者数</option>
+        <option value="b,inhome,自宅療養者数">自宅療養者数</option>
+        <option value="b,wait,療養先調整中の人数">療養先調整中の人数</option>
+        <option value="b,inpatient_sev,重症者数">重症者数</option>
+        <option value="b,bed_kakuho,確保病床数">確保病床数</option>
+        <option value="b,bed_sokuou,即応病床数">即応病床数</option>
+        <option value="b,bed_sev_kakuho,重症者専用確保病床数">重症者専用確保病床数</option>
+        <option value="b,bed_sev_sokuou,重症者専用即応病床数">重症者専用即応病床数</option>
+    </select>
+
+    <label for="y_select">　y軸を選択:</label>
+    <select name="y_select" id="y_select">
+        <option value="p,sum,全人口">全人口</option>
+        <option value="p,-14,14才以下人口">14才以下人口</option>
+        <option value="p,15-64,15-64歳人口">15-64歳人口</option>
+        <option value="p,65-,65歳以上人口">65歳以上人口</option>
+        <option value="v,vac1,ワクチン１回接種人口">ワクチン１回接種人口</option>
+        <option value="v,vac2,ワクチン２回接種人口">ワクチン２回接種人口</option>
+        <option value="v,vac1_65,１回接種／65歳以上">１回接種／65歳以上</option>
+        <option value="v,vac2_65,２回接種／65歳以上">２回接種／65歳以上</option>
+        <option value="v,vac1_64,１回接種／65歳未満">１回接種／65歳未満</option>
+        <option value="v,vac2_64,２回接種／65歳未満">２回接種／65歳未満</option>
+        <option value="b,patient,療養者数">療養者数</option>
+        <option value="b,inpatient,入院者数">入院者数</option>
+        <option value="b,inroom,宿泊施設療養者数">宿泊施設療養者数</option>
+        <option value="b,inhome,自宅療養者数">自宅療養者数</option>
+        <option value="b,wait,療養先調整中の人数">療養先調整中の人数</option>
+        <option value="b,inpatient_sev,重症者数">重症者数</option>
+        <option value="b,bed_kakuho,確保病床数">確保病床数</option>
+        <option value="b,bed_sokuou,即応病床数">即応病床数</option>
+        <option value="b,bed_sev_kakuho,重症者専用確保病床数">重症者専用確保病床数</option>
+        <option value="b,bed_sev_sokuou,重症者専用即応病床数">重症者専用即応病床数</option>
+    </select>
+    <button id="update_g">グラフ更新</button>
+</div>
+
+
+<div class="form-group">　
+    <select name="prefec" id="prefec">県名を選択</select>
+    <button id="colorize">強調</button>
+    <button id="colorize_no">戻す</button>
+</div>
+
+
+<div class="wrapper" id="here1" style="height: 100%; width: 100%;" id="here1">
+    <canvas id="chart1" width="150" height="150" ></canvas>
+</div>
+
+
+
+
+<script>
+    //データ設定
+    let datatext = '<%-datatext1%>';
+    let data =JSON.parse(datatext);
+    let poptext = '<%-datatext2%>';
+    let data_popu = JSON.parse(poptext);
+    let bedtext = '<%-datatext3%>';
+    let data_bed =JSON.parse(bedtext);
+    console.log(data_popu['01']); console.log(data_bed['01']);
+
+    //初期設定
+    let p_numbers = [];
+    for(let i=1; i<48; i++){p_numbers.push(('0' + i).slice(-2));}
+    let pn;
+
+    $("select#x_select").val('b,patient,療養者数');
+    $("select#y_select").val('b,inpatient,入院者数');
+    let xvs = ['b','patient','療養者数'];
+    let yvs = ['b','inpatient','入院者数'];
+    let xfunc = data_bed;
+    let yfunc = data_bed;
+    sc1graph($("#chart1"));　//デフォルト
+
+
+
+    //ワクチンデータを整理
+    function makevacdata(pnum){
+        let sd1 = $.grep(data, function(obj){return obj.status==1 && obj.prefecture==pnum});
+        let sd1_65  = $.grep(sd1, function(obj){return obj.age=='65-'});
+        let sd1_64  = $.grep(sd1, function(obj){return obj.age=='-64'});
+        let sd2 = $.grep(data, function(obj){return obj.status==2 && obj.prefecture==pnum});
+        let sd2_65  = $.grep(sd2, function(obj){return obj.age=='65-'});
+        let sd2_64  = $.grep(sd2, function(obj){return obj.age=='-64'});
+        let vacarr = [sd1,sd1_65,sd1_64, sd2,sd2_65,sd2_64];
+        let namarr = ['vac1', 'vac1_65', 'vac1_64', 'vac2', 'vac2_65', 'vac2_64'];
+        let onep = {};
+        for (let i=0; i<vacarr.length; i++){
+            let da = d_summarize_xy(vacarr[i]).stuck;
+            da = da[da.length-1];
+            onep[namarr[i]] = da.y;
+        }
+        return onep;
+    }
+    let data_vaccine = {};
+    for (let i=0; i<47; i++){
+        data_vaccine[p_numbers[i]] = makevacdata(p_numbers[i]);
+    }
+    console.log(data_vaccine['01']);
+
+
+    //グラフ表示
+    $("#update_g").click(function(){
+        xvs = $("select#x_select").val(); xvs = xvs.split(',');
+        yvs = $("select#y_select").val(); yvs = yvs.split(',');
+        if(xvs[0]=='p'){xfunc = data_popu;}else if(xvs[0]=='v'){xfunc = data_vaccine;}else if(xvs[0]=='b'){xfunc = data_bed;}
+        if(yvs[0]=='p'){yfunc = data_popu;}else if(yvs[0]=='v'){yfunc = data_vaccine;}else if(yvs[0]=='b'){yfunc = data_bed;}
+        $('#here1').empty();  $('#here1').append('<canvas id="chart1" width="150" height="150" ></canvas>');
+        sc1graph($("#chart1"));
+    })
+
+
+
+    //グラフ色変更
+    let p_names = ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県',
+        '東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県',
+        '滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県',
+        '香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島','沖縄県']
+    for(let i=0; i<p_numbers.length; i++){
+        $('select#prefec').append('<option value=' +p_numbers[i]+ '>' +p_names[i]+ '</option>');
+    }
+
+    $("#colorize").click(function(){
+        pn = $("select#prefec").val();
+        pn = Number(pn) - 1;
+        sc1graph($("#chart1"));
+    })
+    $("#colorize_no").click(function(){
+        pn = undefined;
+        sc1graph($("#chart1"));
+    })
+
+
+    //グラフ設定
+    function sc1graph(where){
+
+        let p_datas = [];
+        for(let i=0; i<47; i++){p_datas.push({
+            label:data_popu[p_numbers[i]]['name'],
+            data:[{x: xfunc[p_numbers[i]][xvs[1]],  y: yfunc[p_numbers[i]][yvs[1]]}],
+            backgroundColor: 'rgba(0, 0, 0, 1)',
+            })
+        }
+
+        let datas1= {datasets: p_datas};
+
+        let opt1 = {      
+            title:{text:'ScatterPlot', display:true ,fontSize: 20},
+            animation : false,
+            legend: {display: false, align: 'start',position: 'right',},
+            scales: {
+                xAxes: [{
+                    scaleLabel: {display: true,labelString: xvs[2],fontSize: 18}
+                }],
+                yAxes: [{
+                    scaleLabel: {display: true, labelString: yvs[2],fontSize: 18},
+                    //ticks: { min:0, callback: function(value, index, values){return  value +  '人'}}
+                }]
+            }
+        };
+
+        opt1.tooltips = {
+            backgroundColor: "rgba(19, 56, 95, 0.9)",
+            xPadding: 12,
+            yPadding: 10,
+        // マーカーによって変更するもの
+            callbacks: {
+        // ツールチップの表示内容
+                label: function(tooltipItem, data) {
+                    var groupName = data.datasets[tooltipItem.datasetIndex].label;
+                    var xAxesLabel = opt1.scales.xAxes[0].scaleLabel.labelString;
+                    var yAxesLabel = opt1.scales.yAxes[0].scaleLabel.labelString;
+                    return ` ${groupName} | ${xAxesLabel}: ${tooltipItem.label} | ${yAxesLabel}: ${tooltipItem.value}`;
+                }
+            }
+        };
+        if(pn!=undefined){
+            datas1.datasets[pn].backgroundColor = 'rgba(200, 20, 20, 0.8)';
+            datas1.datasets[pn].pointRadius = 8;
+        }
+    
+        let graph1 = new Chart(where, {
+            data:datas1, 
+            type:'scatter', 
+            options:opt1
+        });
+    }
+
+
+</script>
+
+
+<%-include('../confing/footer')%>

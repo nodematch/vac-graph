@@ -1,0 +1,275 @@
+<%-include('../confing/header')%>
+
+<div class="form-group">　
+    <label for="prefec">県名を選択:</label>
+    <select name="prefec" id="prefec">
+    </select>
+    <button id="change_prefec">更新</button>
+</div>
+<script>
+    let p_numbers = [];
+    for(let i=0; i<48; i++){p_numbers.push(('0' + i).slice(-2));}
+
+    let p_names = ['全国','北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県',
+        '東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県',
+        '滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県',
+        '香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島','沖縄県']
+
+    for(let i=0; i<p_numbers.length; i++){
+        $('select#prefec').append('<option value=' +p_numbers[i]+ '>' +p_names[i]+ '</option>');
+    }
+</script>
+
+
+
+<!-- グラフ -->
+<div class="wrapper" style="height: 80%; width: 80%;" id="here1">
+    <canvas id="chart1" width="150" height="100" ></canvas>
+</div>
+<br><br>
+<div class="wrapper" style="height: 80%; width: 80%;" id="here2">
+    <canvas id="chart2" width="150" height="100" ></canvas>
+</div>
+<br><br>
+<div class="wrapper" style="height: 80%; width: 80%;" id="here3">
+    <canvas id="chart3" width="150" height="100" ></canvas>
+</div>
+
+
+
+
+<script>
+    //データ設定
+    let datatext = '<%-datatext1%>';
+    let data =JSON.parse(datatext);
+    let poptext = '<%-datatext2%>';
+    let data_popu = JSON.parse(poptext);
+    let bedtext = '<%-datatext3%>';
+    let data_bed =JSON.parse(bedtext);
+
+    let p_number = '00';
+    let select1; let select2;
+    let da_64M; let da_64F; let da_65M; let da_65F;
+    let name_p;
+
+
+    $("select#prefec").val(p_number);
+    console.log(data_popu[p_number]);
+    console.log(data_bed[p_number]);
+    console.log(data[0]);
+   
+
+    //グラフ表示
+    prepare_g();
+    bargraph_prefecture($("#chart1"));
+    linestuckgraph_prefecture($("#chart2"));
+    linefourgraph_prefecture($("#chart3"));
+
+    $("#change_prefec").click(function(){
+        p_number = $("select#prefec").val();
+        $('#here1').empty(); $('#here1').append('<canvas id="chart1" width="150" height="100" ></canvas>');
+        $('#here2').empty(); $('#here2').append('<canvas id="chart2" width="150" height="100" ></canvas>');
+        $('#here3').empty(); $('#here3').append('<canvas id="chart3" width="150" height="100" ></canvas>');
+        prepare_g();
+        bargraph_prefecture($("#chart1"));
+        linestuckgraph_prefecture($("#chart2"));
+        linefourgraph_prefecture($("#chart3"));
+    })
+
+
+
+
+    //グラフ設定
+    function prepare_g(){
+        if(p_number=='00'){
+            select1 = $.grep(data, function(obj){return obj.status==1});
+            select2 = $.grep(data, function(obj){return obj.status==2});
+        }else{
+            select1 = $.grep(data, function(obj){return obj.status==1 && obj.prefecture==p_number});
+            select2 = $.grep(data, function(obj){return obj.status==2 && obj.prefecture==p_number});
+        }
+        let select_64M = $.grep(select2, function(obj){return obj.gender=='M' && obj.age=='-64'});
+        da_64M = d_summarize_xy(select_64M).stuck;
+        let select_64F = $.grep(select2, function(obj){return obj.gender=='F' && obj.age=='-64'});
+        da_64F = d_summarize_xy(select_64F).stuck;
+        let select_65M = $.grep(select2, function(obj){return obj.gender=='M' && obj.age=='65-'});
+        da_65M = d_summarize_xy(select_65M).stuck;
+        let select_65F = $.grep(select2, function(obj){return obj.gender=='F' && obj.age=='65-'});
+        da_65F = d_summarize_xy(select_65F).stuck;
+        
+        name_p = data_popu[p_number]["name"];
+    }
+
+
+
+
+    function bargraph_prefecture(where){
+        let label0 = ['-14_M','-14_F','15-64_M','15-64_F','65-_M','65-_F'];
+        let labelname = ['-14歳・男','-14歳・女','15-64歳・男','15-64歳・女','65-歳・男','65-歳・女'];
+        let pdata = [];
+        for (let i=0; i<label0.length; i++){
+            pdata.push(data_popu[p_number][label0[i]]);
+        }
+        let vaccine_comp = [0, 0, da_64M[da_64M.length-1].y, da_64F[da_64F.length-1].y, da_65M[da_65M.length-1].y, da_65F[da_65F.length-1].y ];
+
+        let datas = {
+            labels: labelname,
+            datasets: [{
+                label:'県人口',
+                data:pdata,
+                backgroundColor: "rgba(250, 50, 50, 0.3)",borderColor: "rgba(200, 50, 50, 0.3)",
+            },{
+                label:'2回目接種人数',
+                data:vaccine_comp,
+                backgroundColor: "rgba(50, 250, 50, 0.3)",borderColor: "rgba(50, 200, 50, 0.3)",
+            }]
+        }
+
+        let opt = {      
+            title:{text: 'ワクチン接種完了人口(' + name_p + ')' , display:true, fontSize:20},
+            scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
+            legend: {display: true, align: 'start',position: 'top',},
+            scales: {
+                //xAxes: [{}],
+                yAxes: [{
+                    position: "left", 
+                    scaleLabel: {display: true, labelString: '人数'},
+                    ticks: { min:0, callback: function(value, index, values){return  value +  '人'}}
+                }]
+            }
+        };
+        let graph1 = new Chart(where, {
+            data:datas, 
+            type:'bar', 
+            options:opt
+        });
+    }
+    
+
+
+
+    function linestuckgraph_prefecture(where){
+    
+        let data1 = d_summarize_xy(select1);
+        let data2 = d_summarize_xy(select2);
+    
+        let stuck2_per = [];
+        $.each(data2.count, function(idx,obj){
+            stuck2_per.push({x:obj.x, y:obj.y/data_popu[p_number]["sum"]*100});
+        })
+    
+        let datas = {
+            datasets: [{
+                label:'1回目人数',
+                data:data1.stuck,
+                backgroundColor: "rgba(250, 50, 50, 0)",borderColor: "rgba(250, 50, 50, 1)",pointBorderColor:"rgba(250, 50, 50, 0)",pointBackgroundColor:"rgba(250, 50, 50, 1)",
+                yAxisID: "y-1",
+            },{
+                label:'2回目人数',
+                data:data2.stuck,
+                backgroundColor: "rgba(50, 50, 250, 0)",borderColor: "rgba(50, 50, 250, 1)",pointBorderColor:"rgba(50, 50, 250, 0)",pointBackgroundColor:"rgba(50, 50, 250, 1)",
+                yAxisID: "y-1",
+            },{
+                label:'2回目ペース(県人口当たり)',
+                data:stuck2_per,                
+                backgroundColor: "rgba(0, 0, 0, 0)",borderColor: "rgba(0, 0, 0, 0.5)",pointBorderColor:"rgba(0, 0, 0, 0)",pointBackgroundColor:"rgba(0, 0, 0, 0)",
+                yAxisID: "y-2",
+            }]
+        };
+            
+        let opt = {      
+            title:{text: 'ワクチン接種推移(' + name_p + ')' , display:true, fontSize: 20},
+            scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
+            legend: {display: true, align: 'start',position: 'top',},
+            scales: {
+                xAxes: [{       
+                    scaleLabel: {display: true, labelString: '年月日'},   
+                    type: 'time',
+                    time: {parser: 'YYYY-MM-DD', unit: 'day', stepSize: 1, displayFormats: {'hour': 'MM-DD'}},
+                    //ticks: {min: '2021-04-01'}
+                }],
+                yAxes: [{
+                    id: "y-1",
+                    position: "left", 
+                    scaleLabel: {display: true, labelString: '接種人数'},
+                    ticks: { min:0, callback: function(value, index, values){return  value +  '人'}}
+                },{
+                    id: "y-2",
+                    position: "right", 
+                    scaleLabel: {display: true, labelString: '接種ペース'},
+                    ticks: { min:0, callback: function(value, index, values){return  value +  '%'}}
+                }]
+            }
+        };
+            
+        let graph2 = new Chart(where, {
+            data:datas, 
+            type:'line', 
+            options:opt
+        });
+    }
+
+
+
+
+    function linefourgraph_prefecture(where){
+    
+        let da_64M_per = []; let da_65M_per = []; let da_64F_per = []; let da_65F_per = []; 
+        $.each(da_64M, function(idx,obj){da_64M_per.push({x:obj.x, y:obj.y/data_popu[p_number]["15-64_M"]*100});})
+        $.each(da_65M, function(idx,obj){da_65M_per.push({x:obj.x, y:obj.y/data_popu[p_number]["65-_M"]*100});})
+        $.each(da_64F, function(idx,obj){da_64F_per.push({x:obj.x, y:obj.y/data_popu[p_number]["15-64_F"]*100});})
+        $.each(da_65F, function(idx,obj){da_65F_per.push({x:obj.x, y:obj.y/data_popu[p_number]["65-_F"]*100});})
+
+
+        let datas = {
+            datasets: [{
+                label:'15-64歳・男',
+                data:da_64M_per,
+                backgroundColor: "rgba(0, 0, 0, 0)",borderColor: "rgba(250, 50, 50, 1)",pointBorderColor:"rgba(0, 0, 0, 0)",pointBackgroundColor:"rgba(250, 50, 50, 1)",
+            },{
+                label:'15-64歳・女',
+                data:da_64F_per,
+                backgroundColor: "rgba(0, 0, 0, 0)",borderColor: "rgba(200, 50, 200, 1)",pointBorderColor:"rgba(0, 0, 0, 0)",pointBackgroundColor:"rgba(200, 50, 200, 1)",
+            },{
+                label:'65-歳・男',
+                data:da_65M_per,
+                backgroundColor: "rgba(0, 0, 0, 0)",borderColor: "rgba(50, 200, 200, 1)",pointBorderColor:"rgba(0, 0, 0, 0)",pointBackgroundColor:"rgba(50, 200, 200, 1)",
+            },{
+                label:'65-歳・女',
+                data:da_65F_per,
+                backgroundColor: "rgba(0, 0, 0, 0)",borderColor: "rgba(50, 250, 50, 1)",pointBorderColor:"rgba(0, 0, 0, 0)",pointBackgroundColor:"rgba(50, 250, 50, 1)",
+            }]
+        };
+            
+        let opt = {      
+            title:{text: '分類別ワクチン接種推移(' + name_p + ')' , display:true, fontSize: 20},
+            scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
+            legend: {display: true, align: 'start',position: 'top',},
+            scales: {
+                xAxes: [{       
+                    scaleLabel: {display: true, labelString: '年月日'},   
+                    type: 'time',
+                    time: {parser: 'YYYY-MM-DD', unit: 'day', stepSize: 1, displayFormats: {'hour': 'MM-DD'}},
+                    //ticks: {min: '2021-04-01'}
+                }],
+                yAxes: [{
+                    position: "left", 
+                    scaleLabel: {display: true, labelString: '各分類ごとの接種完了割'},
+                    ticks: { min:0, max:100, callback: function(value, index, values){return  value +  '%'}}
+                }]
+            }
+        };
+            
+        let graph3 = new Chart(where, {
+            data:datas, 
+            type:'line', 
+            options:opt
+        });
+    }
+
+
+</script>
+
+
+<%-include('../confing/footer')%>
+
