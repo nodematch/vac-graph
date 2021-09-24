@@ -44,8 +44,6 @@
     let data =JSON.parse(datatext);
     let poptext = '<%-datatext2%>';
     let data_popu = JSON.parse(poptext);
-    let bedtext = '<%-datatext3%>';
-    let data_bed =JSON.parse(bedtext);
 
     let p_number = '00';
     let select1; let select2;
@@ -54,9 +52,7 @@
 
 
     $("select#prefec").val(p_number);
-    console.log(data_popu[p_number]);
-    console.log(data_bed[p_number]);
-    console.log(data[0]);
+    //console.log(data_popu[p_number]); console.log(data[0]);
    
 
     //グラフ表示
@@ -78,6 +74,23 @@
 
 
 
+
+    //原本json を [{x:num(date), y:num}, ..] へ変換
+    function d_summarize_xy(da){
+        let d2D =[ {x:da[0]["date"], y:0} ];
+        $.each(da, function(idx,obj){
+            if (obj["date"] == d2D[d2D.length-1].x){
+                d2D[d2D.length-1].y += obj["count"];
+            }else{
+                d2D.push({x:obj["date"], y:obj["count"]});
+            }
+        })
+        let d2Dstu = [{x:d2D[0].x, y:d2D[0].y}];
+        for(let i=1; i<d2D.length; i++){
+            d2Dstu.push({x : d2D[i].x, y: d2Dstu[i-1].y + d2D[i].y});
+        }
+        return {count : d2D, stuck : d2Dstu};
+    }
 
     //グラフ設定
     function prepare_g(){

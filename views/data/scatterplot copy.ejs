@@ -81,76 +81,79 @@
     console.log(data_bedseries[latestday]["00"]);
 
     //初期設定
+    let p_numbers = [];
+    for(let i=1; i<48; i++){p_numbers.push(('0' + i).slice(-2));}
     let pn;
-    let p_numbers = []; for(let i=1; i<48; i++){p_numbers.push(('0' + i).slice(-2));}
-
-    let vac1 = $.grep(data, function(obj){return obj.status==1});
-    let vac2 = $.grep(data, function(obj){return obj.status==2});
-    let vac1_65  = $.grep(vac1, function(obj){return obj.age=='65-'});
-    let vac1_64  = $.grep(vac1, function(obj){return obj.age=='-64'});
-    let vac2_65  = $.grep(vac2, function(obj){return obj.age=='65-'});
-    let vac2_64  = $.grep(vac2, function(obj){return obj.age=='-64'});
-
+    let p_datas;
     $("select#x_select").val('b,patient,療養者数');
     $("select#y_select").val('b,inpatient,入院者数');
     let xvs = ['b','patient','療養者数'];
     let yvs = ['b','inpatient','入院者数'];
-     
-    let p_datas = [];
-    for(let i=0; i<47; i++){
-        p_datas.push({label:data_popu[p_numbers[i]]['name'], data:[{}], backgroundColor: 'rgba(0, 0, 0, 1)'})
-    }
-
-    datasetting();
-    sc1graph($("#chart1"));
+    let xfunc = data_bedseries[latestday];
+    let yfunc = data_bedseries[latestday];
+    prepare_g();
+    sc1graph($("#chart1"));　//デフォルト
+    
 
 
-    function prepare_xy_b(alp){
-        if(alp=='x'){
-            for(let i=0; i<47; i++){p_datas[i].data[0].x = data_bedseries[latestday][p_numbers[i]][xvs[1]];}
-        }else if(alp=='y') {
-            for(let i=0; i<47; i++){p_datas[i].data[0].y = data_bedseries[latestday][p_numbers[i]][yvs[1]];}
+    function prepare_g(){
+        p_datas = [];
+        for(let i=0; i<47; i++){p_datas.push({
+            label:data_popu[p_numbers[i]]['name'],
+            data:[{x: xfunc[p_numbers[i]][xvs[1]],  y: yfunc[p_numbers[i]][yvs[1]]}],
+            backgroundColor: 'rgba(0, 0, 0, 1)',
+            })
         }
     }
+    
 
-    function prepare_xy_p(alp){
-        if(alp=='x'){
-            for(let i=0; i<47; i++){p_datas[i].data[0].x = data_popu[p_numbers[i]][xvs[1]];}
-        }else if(alp=='y') {
-            for(let i=0; i<47; i++){p_datas[i].data[0].y = data_popu[p_numbers[i]][yvs[1]];}
+
+    //ワクチンデータを整理
+    function makevacdata(pnum){
+        let sd1 = $.grep(data, function(obj){return obj.status==1 && obj.prefecture==pnum});
+        let sd1_65  = $.grep(sd1, function(obj){return obj.age=='65-'});
+        let sd1_64  = $.grep(sd1, function(obj){return obj.age=='-64'});
+        let sd2 = $.grep(data, function(obj){return obj.status==2 && obj.prefecture==pnum});
+        let sd2_65  = $.grep(sd2, function(obj){return obj.age=='65-'});
+        let sd2_64  = $.grep(sd2, function(obj){return obj.age=='-64'});
+        let vacarr = [sd1,sd1_65,sd1_64, sd2,sd2_65,sd2_64];
+        let namarr = ['vac1', 'vac1_65', 'vac1_64', 'vac2', 'vac2_65', 'vac2_64'];
+        let onep = {};
+        for (let i=0; i<vacarr.length; i++){
+            let da = d_summarize_xy(vacarr[i]).stuck;
+            da = da[da.length-1];
+            onep[namarr[i]] = da.y;
         }
+        return onep;
     }
+    let data_vaccine = {};
+    for (let i=0; i<47; i++){
+        data_vaccine[p_numbers[i]] = makevacdata(p_numbers[i]);
+    }
+    console.log(data_vaccine['01']);
 
-    function prepare_xy_v(alp){
-        let xf; let yf;
-        if(xvs[1]=='vac1'){xf=vac1;}else if(xvs[1]=='vac1_65'){xf = vac1_65;}else if(xvs[1]=='vac1_64'){xf = vac1_64;}
-        else if(xvs[1]=='vac2'){xf = vac2;}else if(xvs[1]=='vac2_65'){xf = vac2_65;}else if(xvs[1]=='vac2_64'){xf = vac2_64;}
-        if(yvs[1]=='vac1'){yf=vac1;}else if(yvs[1]=='vac1_65'){yf = vac1_65;}else if(yvs[1]=='vac1_64'){yf = vac1_64;}
-        else if(yvs[1]=='vac2'){yf = vac2;}else if(yvs[1]=='vac2_65'){yf = vac2_65;}else if(yvs[1]=='vac2_64'){yf = vac2_64;}
 
-        if(alp=='x'){
-            for(let i=0; i<47; i++){
-                let ep = $.grep(xf, function(obj){return obj.prefecture==p_numbers[i]});
-                let st = 0;
-                for(let i=0; i<ep.length; i++){ st += ep[i]["count"]; }
-                p_datas[i].data[0].x = st;
+
+
+
+
+    
+    //原本json を [{x:num(date), y:num}, ..] へ変換
+    function d_summarize_xy(da){
+        let d2D =[ {x:da[0]["date"], y:0} ];
+        $.each(da, function(idx,obj){
+            if (obj["date"] == d2D[d2D.length-1].x){
+                d2D[d2D.length-1].y += obj["count"];
+            }else{
+                d2D.push({x:obj["date"], y:obj["count"]});
             }
-        }else if(alp=='y'){
-            for(let i=0; i<47; i++){
-                let ep = $.grep(yf, function(obj){return obj.prefecture==p_numbers[i]});
-                let st = 0;
-                for(let i=0; i<ep.length; i++){ st += ep[i]["count"]; }
-                p_datas[i].data[0].y = st;
-            }
+        })
+        let d2Dstu = [{x:d2D[0].x, y:d2D[0].y}];
+        for(let i=1; i<d2D.length; i++){
+            d2Dstu.push({x : d2D[i].x, y: d2Dstu[i-1].y + d2D[i].y});
         }
+        return {count : d2D, stuck : d2Dstu};
     }
-
-    function datasetting(){
-        if(xvs[0]=='p'){prepare_xy_p('x');}else if(xvs[0]=='v'){prepare_xy_v('x');}else if(xvs[0]=='b'){prepare_xy_b('x');}
-        if(yvs[0]=='p'){prepare_xy_p('y');}else if(yvs[0]=='v'){prepare_xy_v('y');}else if(yvs[0]=='b'){prepare_xy_b('y');}
-    }
-
-
 
 
 
@@ -158,9 +161,10 @@
     $("#update_g").click(function(){
         xvs = $("select#x_select").val(); xvs = xvs.split(',');
         yvs = $("select#y_select").val(); yvs = yvs.split(',');
-
+        if(xvs[0]=='p'){xfunc = data_popu;}else if(xvs[0]=='v'){xfunc = data_vaccine;}else if(xvs[0]=='b'){xfunc = data_bedseries[latestday];}
+        if(yvs[0]=='p'){yfunc = data_popu;}else if(yvs[0]=='v'){yfunc = data_vaccine;}else if(yvs[0]=='b'){yfunc = data_bedseries[latestday];}
         $('#here1').empty();  $('#here1').append('<canvas id="chart1" width="150" height="150" ></canvas>');
-        datasetting();
+        prepare_g();
         sc1graph($("#chart1"));
     })
 

@@ -1,1 +1,5 @@
 /node_modules
+/write_fromcsv_tojson.js
+/write_fromxlsx_tojson_series.js
+/write_fromxlsx_tojson.js
+/datas_original

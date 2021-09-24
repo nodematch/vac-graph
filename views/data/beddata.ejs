@@ -40,18 +40,11 @@
 
 <script>
     //データ設定
-    let datatext = '<%-datatext1%>';
-    let data =JSON.parse(datatext);
-    let poptext = '<%-datatext2%>';
-    let data_popu = JSON.parse(poptext);
-    let bedseriestext = '<%-datatext3%>';
+    let bedseriestext = '<%-datatext1%>';
     let data_bedseries =JSON.parse(bedseriestext);
     let p_number = '00'
-    let latestday = 'bed_210915';
-    console.log(data_popu[p_number]);
-    console.log(data_bedseries['bed_210915'][p_number]);
+    let latestday = '<%-latestday%>';
     //console.log(data_bedseries);
-
 
     let label_ymd; let data_bedkak; let data_bedsevkak;
     let data_inp; let data_inr; let data_inh; let data_wai; let data_inpsev;
@@ -60,7 +53,7 @@
     function prepare_g(){
         label_ymd = []; data_bedkak = [];   data_bedsevkak = [];
         data_inp = [];  data_inr = [];    data_inh = [];  data_wai = [];    data_inpsev = [];
-        name_p = data_popu[p_number]["name"];
+        name_p = data_bedseries[latestday][p_number]["name"].substr(3);
         for(let key in data_bedseries){
             let yymmdd = key.substr(4,6);
             label_ymd.push(yymmdd);
