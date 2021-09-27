@@ -3,7 +3,7 @@ var router = express.Router();
 
 const fs = require('fs');
 
-let latestday = 'bed_210915';
+let latestday = 'bed_210922';
 
 
 router.get('/data/scatterplot', function(req, res, next) {

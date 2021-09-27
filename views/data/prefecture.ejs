@@ -1,5 +1,8 @@
 <%-include('../confing/header')%>
 
+<div class="h6" id="kousin" style="float:right;"></div>
+<br>
+
 <div class="form-group">　
     <label for="prefec">県名を選択:</label>
     <select name="prefec" id="prefec">
@@ -23,15 +26,15 @@
 
 
 <!-- グラフ -->
-<div class="wrapper" style="height: 80%; width: 80%;" id="here1">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here1">
     <canvas id="chart1" width="150" height="100" ></canvas>
 </div>
 <br><br>
-<div class="wrapper" style="height: 80%; width: 80%;" id="here2">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here2">
     <canvas id="chart2" width="150" height="100" ></canvas>
 </div>
 <br><br>
-<div class="wrapper" style="height: 80%; width: 80%;" id="here3">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here3">
     <canvas id="chart3" width="150" height="100" ></canvas>
 </div>
 
@@ -49,7 +52,8 @@
     let select1; let select2;
     let da_64M; let da_64F; let da_65M; let da_65F;
     let name_p;
-
+    let latestdayp = data[data.length-1].date;
+    $('#kousin').append(('<p>更新: ' + latestdayp + '</p>'))
 
     $("select#prefec").val(p_number);
     //console.log(data_popu[p_number]); console.log(data[0]);
@@ -141,12 +145,12 @@
         let opt = {      
             title:{text: 'ワクチン接種完了人口(' + name_p + ')' , display:true, fontSize:20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',},
+            legend: {display: true, align: 'start',position: 'top', labels:{fontSize:18}},
             scales: {
-                //xAxes: [{}],
+                xAxes: [{ticks:{fontSize:18},}],
                 yAxes: [{
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '人数'},
+                    scaleLabel: {display: true, labelString: '人数', fontSize:18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '人'}}
                 }]
             }
@@ -193,7 +197,7 @@
         let opt = {      
             title:{text: 'ワクチン接種推移(' + name_p + ')' , display:true, fontSize: 20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',},
+            legend: {display: true, align: 'start',position: 'top', labels:{fontSize:18}},
             scales: {
                 xAxes: [{       
                     scaleLabel: {display: true, labelString: '年月日'},   
@@ -204,12 +208,12 @@
                 yAxes: [{
                     id: "y-1",
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '接種人数'},
+                    scaleLabel: {display: true, labelString: '接種人数' ,fontSize:18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '人'}}
                 },{
                     id: "y-2",
                     position: "right", 
-                    scaleLabel: {display: true, labelString: '接種ペース'},
+                    scaleLabel: {display: true, labelString: '接種ペース' ,fontSize:18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '%'}}
                 }]
             }
@@ -257,17 +261,17 @@
         let opt = {      
             title:{text: '分類別ワクチン接種推移(' + name_p + ')' , display:true, fontSize: 20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',},
+            legend: {display: true, align: 'start',position: 'top', labels:{fontSize:18}},
             scales: {
                 xAxes: [{       
-                    scaleLabel: {display: true, labelString: '年月日'},   
+                    scaleLabel: {display: true, labelString: '年月日' ,fontSize:18},   
                     type: 'time',
                     time: {parser: 'YYYY-MM-DD', unit: 'day', stepSize: 1, displayFormats: {'hour': 'MM-DD'}},
                     //ticks: {min: '2021-04-01'}
                 }],
                 yAxes: [{
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '各分類ごとの接種完了割'},
+                    scaleLabel: {display: true, labelString: '各分類ごとの接種完了割' ,fontSize:18},
                     ticks: { min:0, max:100, callback: function(value, index, values){return  value +  '%'}}
                 }]
             }

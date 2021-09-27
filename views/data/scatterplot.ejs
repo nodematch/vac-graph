@@ -52,8 +52,7 @@
     </select>
     <button id="update_g">グラフ更新</button>
 </div>
-
-
+<br>
 <div class="form-group">　
     <select name="prefec" id="prefec">県名を選択</select>
     <button id="colorize">強調</button>
@@ -61,8 +60,8 @@
 </div>
 
 
-<div class="wrapper" id="here1" style="height: 100%; width: 100%;" id="here1">
-    <canvas id="chart1" width="150" height="150" ></canvas>
+<div class="wrapper" id="here1" style="height: 60%; width: 60%;" id="here1">
+    <canvas id="chart1" width="200" height="200" ></canvas>
 </div>
 
 
@@ -159,7 +158,7 @@
         xvs = $("select#x_select").val(); xvs = xvs.split(',');
         yvs = $("select#y_select").val(); yvs = yvs.split(',');
 
-        $('#here1').empty();  $('#here1').append('<canvas id="chart1" width="150" height="150" ></canvas>');
+        $('#here1').empty();  $('#here1').append('<canvas id="chart1" width="200" height="200" ></canvas>');
         datasetting();
         sc1graph($("#chart1"));
     })
@@ -190,7 +189,7 @@
         let datas1= {datasets: p_datas};
 
         let opt1 = {      
-            title:{text:'ScatterPlot', display:true ,fontSize: 20},
+            title:{text:'ScatterPlot', display:false ,fontSize: 20},
             animation : false,
             legend: {display: false, align: 'start',position: 'right',},
             scales: {

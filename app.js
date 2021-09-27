@@ -40,4 +40,12 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
+var cron = require('node-cron');
+var updatevac = require('./vacdata_dltojson');
+ 
+cron.schedule('0 0 3 * * *', () => {
+  updatevac.updatevac();
+});
+
 module.exports = app;

@@ -1,5 +1,8 @@
 <%-include('../confing/header')%>
 
+<div class="h6" id="kousin" style="float:right;"></div>
+<br>
+
 <div class="form-group">　
     <select name="prefec" id="prefec">県名を選択
     </select>
@@ -20,21 +23,19 @@
 </script>
 
 
-
 <!-- グラフ -->
-<div class="wrapper" style="height: 80%; width: 80%;" id="here1">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here1">
     <canvas id="chart1" width="150" height="100" ></canvas>
 </div>
 <br><br>
-<div class="wrapper" style="height: 80%; width: 80%;" id="here2">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here2">
     <canvas id="chart2" width="150" height="100" ></canvas>
 </div>
 <br><br>
-<div class="wrapper" style="height: 80%; width: 80%;" id="here3">
+<div class="wrapper" style="height: 70%; width: 70%;" id="here3">
     <canvas id="chart3" width="150" height="100" ></canvas>
 </div>
-
-
+<br>
 
 
 
@@ -45,6 +46,7 @@
     let p_number = '00'
     let latestday = '<%-latestday%>';
     //console.log(data_bedseries);
+    $('#kousin').append(('<p>更新: 20' + latestday.substr(4,2) + '-' + latestday.substr(6,2) + '-' + latestday.substr(8,2) + '</p>'))
 
     let label_ymd; let data_bedkak; let data_bedsevkak;
     let data_inp; let data_inr; let data_inh; let data_wai; let data_inpsev;
@@ -95,7 +97,7 @@
         let datas = {
             labels: label_ymd,
             datasets: [{
-                label:'入院者数',
+                label:'入院者数', 
                 data:data_inp,
                 backgroundColor: "rgba(250, 50, 0, 0.9)",borderColor: "rgba(250, 50, 0, 0.9)", 
                 pointBorderColor:"rgba(250, 50, 0, 0)",pointBackgroundColor:"rgba(250, 50, 0, 0.9)",
@@ -120,17 +122,17 @@
         let opt = {      
             title:{text:'療養者推移(' + name_p + ')', display:true, fontSize:20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',},
+            legend: {display: true, align: 'start',position: 'top',labels:{fontSize:18}},
             scales: {
                 xAxes: [{       
-                    scaleLabel: {display: true, labelString: '年月日'},   
+                    scaleLabel: {display: true, labelString: '年月日' ,fontSize: 18},   
                     type: 'time',
                     time: {parser: 'YYMMDD', unit: 'day', stepSize: 1, displayFormats: {'hour': 'MM-DD'}},
                     stacked: true, 
                 }],
                 yAxes: [{
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '人数'},
+                    scaleLabel: {display: true, labelString: '人数' ,fontSize: 18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '人'}},
                     stacked: true, 
                 }]
@@ -180,16 +182,16 @@
         let opt = {      
             title:{text:'入院者数と病床数(' + name_p + ')', display:true, fontSize:20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',},
+            legend: {display: true, align: 'start',position: 'top',labels:{fontSize:18}},
             scales: {
                 xAxes: [{       
-                    scaleLabel: {display: true, labelString: '年月日'},   
+                    scaleLabel: {display: true, labelString: '年月日' ,fontSize: 18},   
                     type: 'time',
                     time: {parser: 'YYMMDD', unit: 'day', stepSize: 1, displayFormats: {'hour': 'MM-DD'}},
                 }],
                 yAxes: [{
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '人数'},
+                    scaleLabel: {display: true, labelString: '人数' ,fontSize: 18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '人'}},
                 }]
             }
@@ -236,15 +238,18 @@
         let opt = {      
             title:{text: '療養者内訳(' + name_p + ')' , display:true, fontSize:20},
             scaleOverride : true,  animation : false,  showTooltips: false,  pointDot : false,  bezierCurve : false,
-            legend: {display: true, align: 'start',position: 'top',labels:{
+            legend: {display: true, align: 'start',position: 'top',labels:{fontSize: 18,
                 filter: function(items) {return items.text != '確保病床数';}
                                       // return items.datasetIndex != 5;
             }},
             scales: {
-                yAxes: [{stacked: true}],
+                yAxes: [{
+                    stacked: true,
+                    ticks:{fontSize:18},
+                }],
                 xAxes: [{
                     position: "left", 
-                    scaleLabel: {display: true, labelString: '人数'},
+                    scaleLabel: {display: true, labelString: '人数' ,fontSize: 18},
                     ticks: { min:0, callback: function(value, index, values){return  value +  '人'}},
                     stacked: true, 
                 }]
