@@ -3,6 +3,12 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var schedule = require('node-schedule');
+var updatevac = require('./vacdata_dltojson');
+ 
+schedule.scheduleJob('0 0 3 * * *', function(){
+  updatevac.updatevac();
+});
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -41,11 +47,6 @@ app.use(function(err, req, res, next) {
 });
 
 
-var cron = require('node-cron');
-var updatevac = require('./vacdata_dltojson');
- 
-cron.schedule('0 0 3 * * *', () => {
-  updatevac.updatevac();
-});
+
 
 module.exports = app;
